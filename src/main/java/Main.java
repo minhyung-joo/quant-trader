@@ -45,7 +45,7 @@ public class Main {
         //bulletins(wrapper.getClient());
         //reutersFundamentals(wrapper.getClient());
         //marketDataType(wrapper.getClient());
-        //historicalDataRequests(wrapper.getClient());
+        historicalDataRequests(wrapper.getClient());
         //accountOperations(wrapper.getClient());
 
         Thread.sleep(100000);
@@ -189,12 +189,10 @@ public class Main {
         cal.add(Calendar.MONTH, -6);
         SimpleDateFormat form = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
         String formatted = form.format(cal.getTime());
-        client.reqHistoricalData(4001, ContractSamples.EurGbpFx(), formatted, "1 M", "1 day", "MIDPOINT", 1, 1, null);
-        client.reqHistoricalData(4002, ContractSamples.EuropeanStock(), formatted, "10 D", "1 min", "TRADES", 1, 1, null);
+        client.reqHistoricalData(4001, ContractSamples.HongKongStock(), formatted, "1 M", "1 day", "MIDPOINT", 1, 1, null);
         Thread.sleep(2000);
         /*** Canceling historical data requests ***/
         client.cancelHistoricalData(4001);
-        client.cancelHistoricalData(4002);
         //! [reqhistoricaldata]
 
     }

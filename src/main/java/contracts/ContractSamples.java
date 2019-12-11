@@ -84,7 +84,25 @@ public class ContractSamples {
 		//! [indcontract]
 		return contract;
 	}
-	
+
+	public static Contract HSIIndex() {
+		Contract contract = new Contract();
+		contract.symbol("HSI");
+		contract.secType("IND");
+		contract.currency("HKD");
+		contract.exchange("HKFE");
+		return contract;
+	}
+
+	public static Contract HongKongStock() {
+		Contract contract = new Contract();
+		contract.symbol("700");
+		contract.secType("STK");
+		contract.currency("HKD");
+		contract.exchange("SEHK");
+		return contract;
+	}
+
 	public static Contract CFD() {
 		//! [cfdcontract]
 		Contract contract = new Contract();
