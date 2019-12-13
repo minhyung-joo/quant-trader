@@ -14,6 +14,12 @@ import com.ib.client.OrderState;
 import com.ib.client.SoftDollarTier;
 import com.ib.client.TickType;
 
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
+
 //! [ewrapperimpl]
 public class EWrapperImpl implements EWrapper {
 	//! [ewrapperimpl]
@@ -21,6 +27,9 @@ public class EWrapperImpl implements EWrapper {
 	//! [socket_declare]
 	private EReaderSignal readerSignal;
 	private EClientSocket clientSocket;
+	private MongoClient mongoClient;
+	private MongoDatabase database;
+	private MongoCollection<Document> collection;
 	protected int currentOrderId = -1;
 	//! [socket_declare]
 	
@@ -28,6 +37,9 @@ public class EWrapperImpl implements EWrapper {
 	public EWrapperImpl() {
 		readerSignal = new EJavaSignal();
 		clientSocket = new EClientSocket(this, readerSignal);
+		mongoClient = MongoClients.create();
+		database = mongoClient.getDatabase("bucephalus");
+		collection = database.getCollection("stock_prices");
 	}
 	//! [socket_init]
 	public EClientSocket getClient() {
@@ -227,6 +239,17 @@ public class EWrapperImpl implements EWrapper {
 	public void historicalData(int reqId, String date, double open,
 			double high, double low, double close, int volume, int count,
 			double WAP, boolean hasGaps) {
+		Document doc = new Document("reqId", reqId)
+				.append("date", date)
+				.append("open", open)
+				.append("high", high)
+				.append("low", low)
+				.append("close", close)
+				.append("volume", volume)
+				.append("count", count)
+				.append("WAP", WAP)
+				.append("hasGaps", hasGaps);
+		collection.insertOne(doc);
 		System.out.println("HistoricalData. "+reqId+" - Date: "+date+", Open: "+open+", High: "+high+", Low: "+low+", Close: "+close+", Volume: "+volume+", Count: "+count+", WAP: "+WAP+", HasGaps: "+hasGaps);
 	}
 	//! [historicaldata]

@@ -189,10 +189,12 @@ public class Main {
         cal.add(Calendar.MONTH, -6);
         SimpleDateFormat form = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
         String formatted = form.format(cal.getTime());
-        client.reqHistoricalData(4001, ContractSamples.HongKongStock(), formatted, "1 M", "1 day", "MIDPOINT", 1, 1, null);
+        client.reqHistoricalData(4001, ContractSamples.HSIIndex(), formatted, "1 D", "1 hour", "TRADES", 1, 1, null);
+        client.reqHistoricalData(4002, ContractSamples.HongKongStock(), formatted, "1 D", "1 hour", "TRADES", 1, 1, null);
         Thread.sleep(2000);
         /*** Canceling historical data requests ***/
         client.cancelHistoricalData(4001);
+        client.cancelHistoricalData(4002);
         //! [reqhistoricaldata]
 
     }
