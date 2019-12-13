@@ -55,4 +55,15 @@ public class ScannerSubscriptionSamples {
 		
 	}
 
+	public static ScannerSubscription HotHKStkByVolume() {
+        //! [hotusvolume]
+        //Hot US stocks by volume
+        ScannerSubscription scanSub = new ScannerSubscription();
+        scanSub.instrument("STK");
+        scanSub.locationCode("STK.HK.SEHK");
+        scanSub.scanCode("HOT_BY_VOLUME");
+        //! [hotusvolume]
+        return scanSub;
+    }
+
 }

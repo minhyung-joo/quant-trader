@@ -5,14 +5,20 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import com.mongodb.client.MongoCollection;
 import contracts.*;
 import orders.*;
 import advisor.*;
+import org.bson.Document;
+import static com.mongodb.client.model.Filters.*;
 import scanner.*;
 
 public class Main {
+    private static MongoCollection<Document> collection;
+
     public static void main(String[] args) throws InterruptedException {
-        EWrapperImpl wrapper = new EWrapperImpl();
+        collection = MongoDriver.getMongoCollection();
+        EWrapperImpl wrapper = new EWrapperImpl(collection);
 
         final EClientSocket m_client = wrapper.getClient();
         final EReaderSignal m_signal = wrapper.getSignal();
@@ -37,6 +43,7 @@ public class Main {
         //! [ereader]
         Thread.sleep(1000);
 
+        //saveScannerParameters(wrapper.getClient());
         //orderOperations(wrapper.getClient(), wrapper.getCurrentOrderId());
         //contractOperations(wrapper.getClient());
         //hedgeSample(wrapper.getClient(), wrapper.getCurrentOrderId());
@@ -50,6 +57,10 @@ public class Main {
 
         Thread.sleep(100000);
         m_client.eDisconnect();
+    }
+
+    private static void saveScannerParameters(EClientSocket client) {
+        client.reqScannerParameters();
     }
 
     private static void orderOperations(EClientSocket client, int nextOrderId) throws InterruptedException {
@@ -189,12 +200,23 @@ public class Main {
         cal.add(Calendar.MONTH, -6);
         SimpleDateFormat form = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
         String formatted = form.format(cal.getTime());
-        client.reqHistoricalData(4001, ContractSamples.HSIIndex(), formatted, "1 D", "1 hour", "TRADES", 1, 1, null);
-        client.reqHistoricalData(4002, ContractSamples.HongKongStock(), formatted, "1 D", "1 hour", "TRADES", 1, 1, null);
-        Thread.sleep(2000);
+        String[] stocks = { "700", "941" };
+        int tickerId = 4001;
+        for (String stock : stocks) {
+            Contract contract = new Contract();
+            contract.symbol(stock);
+            contract.secType("STK");
+            contract.currency("HKD");
+            contract.exchange("SEHK");
+            client.reqHistoricalData(tickerId, contract, formatted, "1 M", "1 hour", "TRADES", 1, 1, null);
+
+            Thread.sleep(2000);
+            client.cancelHistoricalData(tickerId);
+            collection.updateMany(eq("reqId", tickerId), new Document("$set", new Document("reqId", stock)));
+            tickerId++;
+        }
+
         /*** Canceling historical data requests ***/
-        client.cancelHistoricalData(4001);
-        client.cancelHistoricalData(4002);
         //! [reqhistoricaldata]
 
     }
@@ -317,7 +339,7 @@ public class Main {
     private static void contractOperations(EClientSocket client) {
 
         //! [reqcontractdetails]
-        client.reqContractDetails(210, ContractSamples.OptionForQuery());
+        client.reqContractDetails(210, ContractSamples.HSIIndex());
         //! [reqcontractdetails]
 
     }
@@ -465,7 +487,7 @@ public class Main {
 
         /*** Triggering a scanner subscription ***/
         //! [reqscannersubscription]
-        client.reqScannerSubscription(7001, ScannerSubscriptionSamples.HighOptVolumePCRatioUSIndexes(), null);
+        client.reqScannerSubscription(7001, ScannerSubscriptionSamples.HotHKStkByVolume(), null);
         //! [reqscannersubscription]
 
         Thread.sleep(2000);

@@ -1,3 +1,4 @@
+import java.io.*;
 import java.util.Set;
 
 import com.ib.client.CommissionReport;
@@ -27,19 +28,15 @@ public class EWrapperImpl implements EWrapper {
 	//! [socket_declare]
 	private EReaderSignal readerSignal;
 	private EClientSocket clientSocket;
-	private MongoClient mongoClient;
-	private MongoDatabase database;
 	private MongoCollection<Document> collection;
 	protected int currentOrderId = -1;
 	//! [socket_declare]
 	
 	//! [socket_init]
-	public EWrapperImpl() {
+	public EWrapperImpl(MongoCollection<Document> collection) {
 		readerSignal = new EJavaSignal();
 		clientSocket = new EClientSocket(this, readerSignal);
-		mongoClient = MongoClients.create();
-		database = mongoClient.getDatabase("bucephalus");
-		collection = database.getCollection("stock_prices");
+		this.collection = collection;
 	}
 	//! [socket_init]
 	public EClientSocket getClient() {
@@ -250,14 +247,20 @@ public class EWrapperImpl implements EWrapper {
 				.append("WAP", WAP)
 				.append("hasGaps", hasGaps);
 		collection.insertOne(doc);
-		System.out.println("HistoricalData. "+reqId+" - Date: "+date+", Open: "+open+", High: "+high+", Low: "+low+", Close: "+close+", Volume: "+volume+", Count: "+count+", WAP: "+WAP+", HasGaps: "+hasGaps);
 	}
 	//! [historicaldata]
 	
 	//! [scannerparameters]
 	@Override
 	public void scannerParameters(String xml) {
-		System.out.println("ScannerParameters. "+xml+"\n");
+		try (Writer writer = new BufferedWriter(new OutputStreamWriter(
+				new FileOutputStream("scanner_params.xml"), "utf-8"))) {
+			writer.write(xml);
+		} catch (FileNotFoundException fe) {
+			fe.printStackTrace();
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+		}
 	}
 	//! [scannerparameters]
 	
