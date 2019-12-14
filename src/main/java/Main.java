@@ -193,32 +193,36 @@ public class Main {
     }
 
     private static void historicalDataRequests(EClientSocket client) throws InterruptedException {
-
-        /*** Requesting historical data ***/
-        //! [reqhistoricaldata]
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.MONTH, -6);
         SimpleDateFormat form = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
-        String formatted = form.format(cal.getTime());
-        String[] stocks = { "700", "941" };
+        String[] usStocks = { "MSFT", "AAPL", "AMZN", "FB", "BRK.B", "JPM", "GOOG", "GOOGL", "JNJ", "V", "PG", "XOM", "BAC", "T", "UNH", "DIS", "MA",
+                "INTC", "VZ", "HD", "MRK", "CVX", "WFC", "PFE", "KO", "CMCSA", "CSCO", "PEP", "BA", "C", "WMT", "ABT", "MDT", "BMY",
+                "MCD", "ADBE", "AMGN", "CRM", "NVDA", "ABBV", "COST", "PM", "NFLX", "AVGO", "ACN", "TMO", "HON", "PYPL", "ORCL", "UNP"
+        };
+        String[] hkStocks = { "1299", "5", "700", "939", "2318", "1398", "941", "388", "3988", "883", "1", "823", "2", "3", "2628",
+                "1113", "16", "11", "386", "27", "1928", "688", "2388", "1109", "2382", "669", "1093", "2007", "2319", "175", "2313",
+                "857", "6", "288", "1177", "66", "17", "267", "12", "1997", "1088", "3328", "1038", "762", "151", "1044", "83", "2018", "19", "101"
+        };
         int tickerId = 4001;
-        for (String stock : stocks) {
-            Contract contract = new Contract();
-            contract.symbol(stock);
-            contract.secType("STK");
-            contract.currency("HKD");
-            contract.exchange("SEHK");
-            client.reqHistoricalData(tickerId, contract, formatted, "1 M", "1 hour", "TRADES", 1, 1, null);
+        tickerId = 5001;
+        for (String stock : hkStocks) {
+            for (int i = 0; i < 84; i++) {
+                Calendar cal = Calendar.getInstance();
+                cal.add(Calendar.MONTH, -i);
+                String formatted = form.format(cal.getTime());
+                Contract contract = new Contract();
+                contract.symbol(stock);
+                contract.secType("STK");
+                contract.currency("HKD");
+                contract.exchange("SEHK");
+                client.reqHistoricalData(tickerId, contract, formatted, "1 M", "1 hour", "TRADES", 1, 1, null);
 
-            Thread.sleep(2000);
-            client.cancelHistoricalData(tickerId);
+                Thread.sleep(1000);
+                client.cancelHistoricalData(tickerId);
+            }
+
             collection.updateMany(eq("reqId", tickerId), new Document("$set", new Document("reqId", stock)));
             tickerId++;
         }
-
-        /*** Canceling historical data requests ***/
-        //! [reqhistoricaldata]
-
     }
 
     private static void realTimeBars(EClientSocket client) throws InterruptedException {
